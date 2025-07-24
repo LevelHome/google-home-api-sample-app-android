@@ -18,6 +18,7 @@ package com.example.googlehomeapisampleapp.viewmodel.structures
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.googlehomeapisampleapp.MainActivity
 import com.example.googlehomeapisampleapp.viewmodel.devices.DeviceViewModel
 import com.google.home.Room
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,9 +46,11 @@ class RoomViewModel (val room: Room) : ViewModel() {
     private suspend fun subscribeToDevices() {
         // Subscribe to changes on devices:
         room.devices().collect { deviceSet ->
+            MainActivity.showDebug("RoomViewModel", "Room ${room.name} has ${deviceSet.size} devices")
             val deviceVMs = mutableListOf<DeviceViewModel>()
             // Store devices in container ViewModels:
             for (device in deviceSet) {
+                MainActivity.showDebug("RoomViewModel", "Device in room: ${device.name}, isMatter: ${device.isMatterDevice}, id: ${device.id.id}")
                 deviceVMs.add(DeviceViewModel(device))
             }
             // Store the ViewModels:

@@ -52,6 +52,8 @@ import com.google.home.ConnectivityState
 import com.google.home.DeviceType
 import com.google.home.Trait
 import com.google.home.matter.standard.BooleanState
+import com.google.home.matter.standard.DoorLock
+import com.google.home.matter.standard.DoorLockTrait
 import com.google.home.matter.standard.LevelControl
 import com.google.home.matter.standard.LevelControlTrait
 import com.google.home.matter.standard.OccupancySensing
@@ -156,6 +158,22 @@ fun ControlListItem (trait: Trait, type: DeviceType) {
                     Text(trait.factory.toString(), fontSize = 20.sp)
                     Text(DeviceViewModel.getTraitStatus(trait, type), fontSize = 16.sp)
                 }
+            }
+            is DoorLock -> {
+                Column (Modifier.fillMaxWidth()) {
+                    Text(trait.factory.toString(), fontSize = 20.sp)
+                    Text(DeviceViewModel.getTraitStatus(trait, type), fontSize = 16.sp)
+                }
+
+                Switch (checked = (trait.lockState == DoorLockTrait.DlLockState.Locked), 
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                    onCheckedChange = { shouldLock ->
+                        scope.launch { 
+                            if (shouldLock) trait.lockDoor() else trait.unlockDoor() 
+                        }
+                    },
+                    enabled = isConnected
+                )
             }
             is Thermostat -> {
                 val supportedModes = arrayOf(

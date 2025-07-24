@@ -26,10 +26,14 @@ import com.google.home.HomeDevice
 import com.google.home.Trait
 import com.google.home.TraitFactory
 import com.google.home.automation.UnknownDeviceType
+
 import com.google.home.matter.standard.BooleanState
 import com.google.home.matter.standard.ColorTemperatureLightDevice
 import com.google.home.matter.standard.ContactSensorDevice
 import com.google.home.matter.standard.DimmableLightDevice
+import com.google.home.matter.standard.DoorLock
+import com.google.home.matter.standard.DoorLockDevice
+import com.google.home.matter.standard.DoorLockTrait
 import com.google.home.matter.standard.ExtendedColorLightDevice
 import com.google.home.matter.standard.GenericSwitchDevice
 import com.google.home.matter.standard.LevelControl
@@ -43,6 +47,7 @@ import com.google.home.matter.standard.OnOffSensorDevice
 import com.google.home.matter.standard.Thermostat
 import com.google.home.matter.standard.ThermostatDevice
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class DeviceViewModel (val device: HomeDevice) : ViewModel() {
@@ -75,7 +80,12 @@ class DeviceViewModel (val device: HomeDevice) : ViewModel() {
 
     private suspend fun subscribeToType() {
         // Subscribe to changes on device type, and the traits/attributes within:
-        device.types().collect { typeSet ->
+        device.types()
+            .onEach { android.util.Log.i(
+                "DeviceViewModel",
+                "device types: ${it.toList()}"
+            ) }
+            .collect { typeSet ->
             // Container for the primary type for this device:
             var primaryType : DeviceType = UnknownDeviceType()
 
@@ -90,6 +100,10 @@ class DeviceViewModel (val device: HomeDevice) : ViewModel() {
 
             // Set the connectivityState from the primary device type:
             connectivity = primaryType.metadata.sourceConnectivity.connectivityState
+                android.util.Log.i(
+                    "DeviceViewModel",
+                    "Connectivity is ${connectivity.name}"
+                )
 
             // Container for list of supported traits present on the primary device type:
             val supportedTraits: List<Trait> = getSupportedTraits(primaryType.traits())
@@ -132,6 +146,7 @@ class DeviceViewModel (val device: HomeDevice) : ViewModel() {
             ContactSensorDevice to BooleanState,
             OccupancySensorDevice to OccupancySensing,
             ThermostatDevice to Thermostat,
+            DoorLockDevice to DoorLock,
         )
 
         // Map determining the user readable value for this device:
@@ -147,6 +162,7 @@ class DeviceViewModel (val device: HomeDevice) : ViewModel() {
             ContactSensorDevice to "Sensor",
             OccupancySensorDevice to "Sensor",
             ThermostatDevice to "Thermostat",
+            DoorLockDevice to "Door Lock"
         )
 
         fun <T : Trait?> getDeviceStatus(type: DeviceType, traits : List<T>, connectivity: ConnectivityState) : String {
@@ -188,6 +204,13 @@ class DeviceViewModel (val device: HomeDevice) : ViewModel() {
                     }
                 }
                 is Thermostat -> { trait.systemMode.toString() }
+                is DoorLock -> { 
+                    when (trait.lockState) {
+                        DoorLockTrait.DlLockState.Locked -> "Locked"
+                        DoorLockTrait.DlLockState.Unlocked -> "Unlocked"
+                        else -> "Unknown"
+                    }
+                }
                 else -> ""
             }
             return status

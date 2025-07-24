@@ -32,6 +32,7 @@ import com.google.home.google.AssistantBroadcast
 import com.google.home.google.AssistantFulfillment
 import com.google.home.google.GoogleDisplayDevice
 import com.google.home.google.GoogleTVDevice
+import com.google.home.google.LockUnlock
 import com.google.home.google.Notification
 import com.google.home.google.Time
 import com.google.home.google.Volume
@@ -40,6 +41,8 @@ import com.google.home.matter.standard.BooleanState
 import com.google.home.matter.standard.ColorTemperatureLightDevice
 import com.google.home.matter.standard.ContactSensorDevice
 import com.google.home.matter.standard.DimmableLightDevice
+import com.google.home.matter.standard.DoorLock
+import com.google.home.matter.standard.DoorLockDevice
 import com.google.home.matter.standard.ExtendedColorLightDevice
 import com.google.home.matter.standard.GenericSwitchDevice
 import com.google.home.matter.standard.LevelControl
@@ -72,24 +75,30 @@ class HomeApp(val context: Context, val scope: CoroutineScope, val activity : Co
             types = supportedTypes,
             traits = supportedTraits
         )
+        android.util.Log.i("SampleApp", "Created FactoryRegistry with ${supportedTypes.size} types and ${supportedTraits.size} traits")
+        android.util.Log.i("SampleApp", "Types: ${supportedTypes.map { it.javaClass.simpleName }}")
+        android.util.Log.i("SampleApp", "Traits: ${supportedTraits.map { it.javaClass.simpleName }}")
 
         // Configuration options for the HomeClient:
         val config = HomeConfig(
             coroutineContext = Dispatchers.IO,
             factoryRegistry = registry
         )
+        android.util.Log.i("SampleApp", "Created HomeConfig with coroutineContext=${config.coroutineContext}")
 
         // Initialize the HomeClient, which is the primary object to use all Home APIs:
         homeClient = HomeClientProvider.getClient(context = context, homeConfig = config)
+        android.util.Log.i("SampleApp", "Created HomeClient: ${homeClient.javaClass.simpleName}@${homeClient.hashCode()}")
 
         // Initialize supporting classes for Permissions and Commissioning APIs:
         permissionsManager = PermissionsManager(context, scope, activity, homeClient)
         commissioningManager = CommissioningManager(context, scope, activity)
+        android.util.Log.i("SampleApp", "HomeApp initialization complete")
     }
 
     companion object {
-        // List of supported device types by this app:
         val supportedTypes: List<DeviceTypeFactory<out DeviceType>> = listOf(
+            DoorLockDevice,
             ContactSensorDevice,
             ColorTemperatureLightDevice,
             DimmableLightDevice,
@@ -107,7 +116,6 @@ class HomeApp(val context: Context, val scope: CoroutineScope, val activity : Co
             ThermostatDevice,
         )
 
-        // List of supported device traits by this app:
         val supportedTraits: List<TraitFactory<out Trait>> = listOf(
             AreaAttendanceState,
             AreaPresenceState,
@@ -125,6 +133,8 @@ class HomeApp(val context: Context, val scope: CoroutineScope, val activity : Co
             Thermostat,
             Time,
             Volume,
+            LockUnlock,
+            DoorLock
         )
     }
 }

@@ -27,9 +27,16 @@ object HomeClientProvider {
     var homeClient: HomeClient? = null
 
     fun getClient(context: Context, homeConfig: HomeConfig): HomeClient {
-
-        if (homeClient == null)
+        android.util.Log.i("SampleApp", "HomeClientProvider.getClient called with context=${context.javaClass.simpleName}")
+        android.util.Log.i("SampleApp", "HomeConfig: coroutineContext=${homeConfig.coroutineContext}, factoryRegistry=${homeConfig.factoryRegistry}")
+        
+        if (homeClient == null) {
+            android.util.Log.i("SampleApp", "Creating new HomeClient via Home.getClient()")
             homeClient = Home.getClient(context = context, homeConfig = homeConfig)
+            android.util.Log.i("SampleApp", "HomeClient created: ${homeClient!!.javaClass.simpleName}@${homeClient!!.hashCode()}")
+        } else {
+            android.util.Log.i("SampleApp", "Reusing existing HomeClient: ${homeClient!!.javaClass.simpleName}@${homeClient!!.hashCode()}")
+        }
 
         return homeClient!!
     }

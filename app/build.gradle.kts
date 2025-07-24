@@ -53,5 +53,5 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     // Home API SDK dependency:
     implementation(libs.play.services.home)
-    implementation("com.google.android.gms:play-services-home-types:17.0.0")
+    implementation(libs.play.services.home.types)
 }
